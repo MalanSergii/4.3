@@ -18,6 +18,11 @@ export class App extends Component {
   componentDidMount = () => {};
 
   async componentDidUpdate(_, prevState) {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+
     if (prevState.query !== this.state.query) {
       try {
         this.firstRequest();
