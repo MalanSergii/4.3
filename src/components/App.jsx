@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import SearchBar from './searchBar';
 import ImageGallery from './imageGallery';
-
 import getData from 'services/fetch';
 import Button from './button';
+import Loader from './loader';
 
 export class App extends Component {
   state = {
@@ -32,6 +32,7 @@ export class App extends Component {
   };
 
   firstRequest = async () => {
+    this.setState({ loader: true });
     const res = await getData({
       query: this.state.query,
       page: 1,
@@ -41,9 +42,11 @@ export class App extends Component {
       data: res.hits,
       restPictures: res.total - this.state.per_page,
     }));
+    this.setState({ loader: false });
   };
 
   loadMorePictures = async () => {
+    this.setState({ loader: true });
     await this.setState(prev => ({ page: prev.page + 1 }));
     const res = await getData({
       query: this.state.query,
@@ -55,14 +58,16 @@ export class App extends Component {
       data: [...prev.data, ...res.hits],
       restPictures: prev.restPictures - this.state.per_page,
     }));
+    this.setState({ loader: false });
   };
 
   render() {
-    const { per_page, restPictures, data } = this.state;
+    const { per_page, restPictures, data, loader } = this.state;
     return (
       <div className="app">
         <SearchBar fillQuery={this.fillQuery}></SearchBar>
         {data.length > 0 && <ImageGallery data={data}></ImageGallery>}
+        {loader && <Loader />}
         {restPictures >= per_page && (
           <Button loadMorePictures={this.loadMorePictures}></Button>
         )}
