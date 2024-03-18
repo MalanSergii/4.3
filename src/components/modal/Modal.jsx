@@ -7,13 +7,14 @@ class Modal extends Component {
   componentDidMount = e => {
     document.addEventListener('keydown', this.onEscapeClick);
   };
-  componentWillUnmount = () => {
-    docum;
+
+  componentWillUnmount = e => {
+    document.removeEventListener('keydown', this.onEscapeClick);
   };
 
   onEscapeClick = e => {
     if (e.code === 'Escape') {
-      console.log('+');
+      this.props.closeModal();
     }
   };
 

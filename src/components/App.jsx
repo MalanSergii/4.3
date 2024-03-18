@@ -1,16 +1,15 @@
 import { Component } from 'react';
 import SearchBar from './searchBar';
 import ImageGallery from './imageGallery';
-import Loader from './loader';
-import Button from './button';
-import Modal from './modal';
+
 import getData from 'services/fetch';
+import Button from './button';
 
 export class App extends Component {
   state = {
     query: '',
     page: 1,
-    per_page: 11,
+    per_page: 12,
     restPictures: null,
     loader: false,
     data: [],
@@ -59,15 +58,13 @@ export class App extends Component {
   };
 
   render() {
-    const { modal, loader, restPictures, per_page, data } = this.state;
+    const { per_page, restPictures, data } = this.state;
     return (
       <div className="app">
         <SearchBar fillQuery={this.fillQuery}></SearchBar>
-        <ImageGallery data={data}></ImageGallery>
-        {loader && <Loader></Loader>}
-
+        {data.length > 0 && <ImageGallery data={data}></ImageGallery>}
         {restPictures >= per_page && (
-          <Button loadMore={this.loadMorePictures}></Button>
+          <Button loadMorePictures={this.loadMorePictures}></Button>
         )}
       </div>
     );

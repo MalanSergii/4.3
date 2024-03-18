@@ -15,12 +15,14 @@ const ModalStyled = styled.div`
   .modal {
     max-width: calc(100vw - 48px);
     max-height: calc(100vh - 24px);
-    
+
     img {
       display: block;
+      margin-right: auto;
+      margin-left: auto;
       height: auto;
-      max-width: 100%;
-    }a
+      max-width: 80%;
+    }
   }
 `;
 

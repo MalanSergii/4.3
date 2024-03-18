@@ -17,8 +17,13 @@ class ImageGalleryItem extends Component {
     const { modal } = this.state;
     const { url, name, largeImg } = this.props;
     return (
-      <ImageGalleryItemStyled className="gallery-item">
-        <img onClick={this.toggleModal} src={url} alt={name} />
+      <ImageGalleryItemStyled>
+        <img
+          className="gallery-item"
+          onClick={this.toggleModal}
+          src={url}
+          alt={name}
+        />
         {modal && (
           <Modal
             closeModal={this.toggleModal}
