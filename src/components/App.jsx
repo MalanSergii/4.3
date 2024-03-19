@@ -10,59 +10,69 @@ export const App = () => {
   const [page, setPage] = useState(1);
   const [restPictures, setRestPictures] = useState(0);
   const [loader, setLoader] = useState(false);
-  const [data, setData] = useState(() => {
-    return [];
-  });
+  const [data, setData] = useState([]);
   const per_page = 3;
-  // const [error, setError] = useState('');
-
-  // useEffect(() => {
-  //   window.scrollTo({
-  //     top: document.documentElement.scrollHeight,
-  //     behavior: 'smooth',
-  //   });
-  // }, [data]);
-
+  const [error, setError] = useState('');
+  if (error) {
+    console.log(error);
+  }
+  // **** first request
   useEffect(() => {
-    if (!query) {
+    if (!query || page > 1) {
       return;
     }
-    const firstRequest = async () => {
+    console.log('first request');
+    const request = async () => {
       setLoader(true);
-      setData([]);
-      const res = await getData({
-        query: query,
-        page: page,
-        per_page: per_page,
-      });
-      await setData(res.hits);
-      await setRestPictures(res.total - per_page);
+      await getData({ query, page, per_page })
+        .then(data => {
+          setData([...data.hits]);
+          setRestPictures(data.total - per_page);
+        })
+        .catch(error => setError(error));
       setLoader(false);
     };
-    try {
-      firstRequest();
-    } catch (error) {
-      console.log(error);
+    request();
+  }, [page, query]);
+
+  // *** load more pictures
+  useEffect(() => {
+    if (page === 1) {
+      return;
     }
-  }, [per_page, query, page]);
+
+    const loadMorePictures = async () => {
+      setLoader(true);
+      await getData({ query, page: page, per_page }).then(data => {
+        setData(prev => [...prev, ...data.hits]);
+        setRestPictures(prev => prev - per_page);
+      });
+      setLoader(false);
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    };
+    loadMorePictures();
+    console.log('load more');
+  }, [page, query]);
 
   const fillQuery = query => {
+    setPage(1);
     setQuery(query);
   };
+  // **** smooth scroll
+  useEffect(() => {
+    if (data.length <= per_page) {
+      return;
+    }
+    console.log('scroll');
 
-  const loadMorePictures = async () => {
-    setLoader(true);
-    await setPage(prev => prev + 1);
-    const res = await getData({
-      query,
-      page,
-      per_page,
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
     });
-    setData(prev => [...prev, ...res.hits]);
-    setRestPictures(prev => prev - per_page);
-    setLoader(false);
-  };
-
+  }, [data]);
   return (
     <div className="app">
       <SearchBar fillQuery={fillQuery}></SearchBar>
@@ -71,8 +81,12 @@ export const App = () => {
 
       {loader && <Loader />}
 
-      {restPictures >= per_page && (
-        <Button loadMorePictures={loadMorePictures}></Button>
+      {restPictures > 0 && (
+        <Button
+          loadMorePictures={() => {
+            setPage(prev => prev + 1);
+          }}
+        ></Button>
       )}
     </div>
   );
