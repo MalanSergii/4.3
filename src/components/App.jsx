@@ -11,7 +11,7 @@ export const App = () => {
   const [restPictures, setRestPictures] = useState(0);
   const [loader, setLoader] = useState(false);
   const [data, setData] = useState([]);
-  const per_page = 3;
+  const per_page = 12;
   const [error, setError] = useState('');
   if (error) {
     console.log(error);
