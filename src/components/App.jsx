@@ -1,82 +1,79 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from './searchBar';
 import ImageGallery from './imageGallery';
 import getData from 'services/fetch';
 import Button from './button';
 import Loader from './loader';
 
-export class App extends Component {
-  state = {
-    query: '',
-    page: 1,
-    per_page: 12,
-    restPictures: null,
-    loader: false,
-    data: [],
-    error: null,
-  };
-  componentDidMount = () => {};
+export const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [restPictures, setRestPictures] = useState(0);
+  const [loader, setLoader] = useState(false);
+  const [data, setData] = useState(() => {
+    return [];
+  });
+  const per_page = 3;
+  // const [error, setError] = useState('');
 
-  async componentDidUpdate(_, prevState) {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
+  // useEffect(() => {
+  //   window.scrollTo({
+  //     top: document.documentElement.scrollHeight,
+  //     behavior: 'smooth',
+  //   });
+  // }, [data]);
 
-    if (prevState.query !== this.state.query) {
-      try {
-        this.firstRequest();
-      } catch (error) {
-        console.log(error);
-      }
+  useEffect(() => {
+    if (!query) {
+      return;
     }
-  }
+    const firstRequest = async () => {
+      setLoader(true);
+      setData([]);
+      const res = await getData({
+        query: query,
+        page: page,
+        per_page: per_page,
+      });
+      await setData(res.hits);
+      await setRestPictures(res.total - per_page);
+      setLoader(false);
+    };
+    try {
+      firstRequest();
+    } catch (error) {
+      console.log(error);
+    }
+  }, [per_page, query, page]);
 
-  fillQuery = query => {
-    this.setState({ query });
+  const fillQuery = query => {
+    setQuery(query);
   };
 
-  firstRequest = async () => {
-    this.setState({ loader: true });
+  const loadMorePictures = async () => {
+    setLoader(true);
+    await setPage(prev => prev + 1);
     const res = await getData({
-      query: this.state.query,
-      page: 1,
-      per_page: this.state.per_page,
+      query,
+      page,
+      per_page,
     });
-    this.setState(prev => ({
-      data: res.hits,
-      restPictures: res.total - this.state.per_page,
-    }));
-    this.setState({ loader: false });
+    setData(prev => [...prev, ...res.hits]);
+    setRestPictures(prev => prev - per_page);
+    setLoader(false);
   };
 
-  loadMorePictures = async () => {
-    this.setState({ loader: true });
-    await this.setState(prev => ({ page: prev.page + 1 }));
-    const res = await getData({
-      query: this.state.query,
-      page: this.state.page,
-      per_page: this.state.per_page,
-    });
+  return (
+    <div className="app">
+      <SearchBar fillQuery={fillQuery}></SearchBar>
 
-    this.setState(prev => ({
-      data: [...prev.data, ...res.hits],
-      restPictures: prev.restPictures - this.state.per_page,
-    }));
-    this.setState({ loader: false });
-  };
+      {data.length > 0 && <ImageGallery data={data}></ImageGallery>}
 
-  render() {
-    const { per_page, restPictures, data, loader } = this.state;
-    return (
-      <div className="app">
-        <SearchBar fillQuery={this.fillQuery}></SearchBar>
-        {data.length > 0 && <ImageGallery data={data}></ImageGallery>}
-        {loader && <Loader />}
-        {restPictures >= per_page && (
-          <Button loadMorePictures={this.loadMorePictures}></Button>
-        )}
-      </div>
-    );
-  }
-}
+      {loader && <Loader />}
+
+      {restPictures >= per_page && (
+        <Button loadMorePictures={loadMorePictures}></Button>
+      )}
+    </div>
+  );
+};

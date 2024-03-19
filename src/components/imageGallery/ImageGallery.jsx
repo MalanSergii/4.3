@@ -1,7 +1,9 @@
 import ImageGalleryItem from 'components/imageGalleryItem/ImageGalleryItem';
 import ImageGalleryStyled from './ImageGallery.styled';
+import { useEffect } from 'react';
 
 const ImageGallery = ({ data = [] }) => {
+  useEffect(() => {}, [data]);
   return (
     <>
       <ImageGalleryStyled className="gallery">
