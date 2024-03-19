@@ -4,7 +4,7 @@ import ImageGallery from './imageGallery';
 import getData from 'services/fetch';
 import Button from './button';
 import Loader from './loader';
-
+import { nanoid } from 'nanoid';
 export const App = () => {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
@@ -26,14 +26,19 @@ export const App = () => {
       setLoader(true);
       await getData({ query, page, per_page })
         .then(data => {
-          setData([...data.hits]);
+          setData(
+            ...data.hits.map((item, idx, arr) => {
+              item.id = nanoid();
+              return arr;
+            })
+          );
           setRestPictures(data.total - per_page);
         })
         .catch(error => setError(error));
       setLoader(false);
     };
     request();
-  }, [page, query]);
+  }, [data.total, page, query]);
 
   // *** load more pictures
   useEffect(() => {
@@ -44,7 +49,13 @@ export const App = () => {
     const loadMorePictures = async () => {
       setLoader(true);
       await getData({ query, page: page, per_page }).then(data => {
-        setData(prev => [...prev, ...data.hits]);
+        setData(prev => [
+          ...prev,
+          ...data.hits.map((item, idx, arr) => {
+            item.id = nanoid();
+            return item;
+          }),
+        ]);
         setRestPictures(prev => prev - per_page);
       });
       setLoader(false);
@@ -73,6 +84,7 @@ export const App = () => {
       behavior: 'smooth',
     });
   }, [data]);
+
   return (
     <div className="app">
       <SearchBar fillQuery={fillQuery}></SearchBar>
