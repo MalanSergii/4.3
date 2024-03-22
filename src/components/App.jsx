@@ -13,8 +13,9 @@ export const App = () => {
   const [data, setData] = useState([]);
   const per_page = 12;
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   if (error) {
-    console.log(error);
+    console.log(error.message);
   }
   // **** first request
   useEffect(() => {
@@ -24,8 +25,18 @@ export const App = () => {
     console.log('first request');
     const request = async () => {
       setLoader(true);
+      setMessage('');
+      setRestPictures(0);
       await getData({ query, page, per_page })
         .then(data => {
+          if (data.hits.length === 0) {
+            setMessage('no pictures with your request');
+            return;
+          }
+          return data;
+        })
+        .then(data => {
+          // setMessage('');
           setData(
             ...data.hits.map((item, idx, arr) => {
               item.id = nanoid();
@@ -51,7 +62,7 @@ export const App = () => {
       await getData({ query, page: page, per_page }).then(data => {
         setData(prev => [
           ...prev,
-          ...data.hits.map((item, idx, arr) => {
+          ...data.hits.map(item => {
             item.id = nanoid();
             return item;
           }),
@@ -69,6 +80,7 @@ export const App = () => {
   }, [page, query]);
 
   const fillQuery = query => {
+    setData([]);
     setPage(1);
     setQuery(query);
   };
@@ -88,7 +100,7 @@ export const App = () => {
   return (
     <div className="app">
       <SearchBar fillQuery={fillQuery}></SearchBar>
-
+      {message}
       {data.length > 0 && <ImageGallery data={data}></ImageGallery>}
 
       {loader && <Loader />}
